@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Website Template</title>
+  <style>
+    body {
+      max-width: 640px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+      color: #222;
+      font: 1rem/1.5 system-ui, sans-serif;
+    }
+
+    label {
+      display: block;
+      margin: 1rem 0;
+    }
+
+    input {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 16rem;
+      margin-top: 0.25rem;
+      padding: 0.5rem;
+      font: inherit;
+    }
+
+    #result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #888;
+      border-radius: 0.25rem;
+      font-size: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Website Template</h1>
+    <p>This is sample text. Replace it with the content for your website.</p>
+  </header>
+
+  <main>
+    <h2>Sample calculation</h2>
+    <p>Change the values below to see the result of hours multiplied by hourly rate.</p>
+
+    <label for="hours">
+      Hours worked
+      <input id="hours" type="number" min="0" step="0.25" value="40">
+    </label>
+
+    <label for="rate">
+      Hourly rate ($)
+      <input id="rate" type="number" min="0" step="0.01" value="20">
+    </label>
+
+    <output id="result" aria-live="polite">Gross pay: $800.00</output>
+  </main>
+
+  <script src="payroll.js" defer></script>
+</body>
+</html>
