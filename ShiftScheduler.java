@@ -1,4 +1,3 @@
-// Name: Eliezer Dorleus
 // Group Project - Shift Scheduling System
 // This class adds and displays employee shifts.
 
