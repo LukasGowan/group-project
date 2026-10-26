@@ -1,4 +1,3 @@
--- Name: Eliezer Dorleus
 -- Group Project - Shift Scheduling System
 -- This table stores employee work shifts.
 
