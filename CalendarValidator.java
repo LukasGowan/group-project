@@ -1,4 +1,3 @@
-// Name: Eliezer Dorleus
 // Group Project - Calendar API Implementation
 // This class handles date validation and calendar functions.
 
