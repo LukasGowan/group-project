@@ -1,65 +1,221 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Website Template</title>
-  <style>
-    body {
-      max-width: 640px;
-      margin: 3rem auto;
-      padding: 0 1rem;
-      color: #222;
-      font: 1rem/1.5 system-ui, sans-serif;
-    }
-
-    label {
-      display: block;
-      margin: 1rem 0;
-    }
-
-    input {
-      display: block;
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 16rem;
-      margin-top: 0.25rem;
-      padding: 0.5rem;
-      font: inherit;
-    }
-
-    #result {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      border: 1px solid #888;
-      border-radius: 0.25rem;
-      font-size: 1.25rem;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payroll System | Payroll Management System</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
-  <header>
-    <h1>Website Template</h1>
-    <p>This is sample text. Replace it with the content for your website.</p>
-  </header>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-icon">▦</span><span>PayDesk</span></div>
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav class="navigation" aria-label="Main navigation">
+        <button class="nav-link active" data-page="dashboard"><span>⌂</span> Dashboard</button>
+        <button class="nav-link" data-page="employees"><span>♙</span> Employees</button>
+        <button class="nav-link" data-page="payroll"><span>＄</span> Payroll</button>
+        <button class="nav-link" data-page="calendar"><span>▦</span> Calendar</button>
+        <button class="nav-link" data-page="reports"><span>▤</span> Reports</button>
+        <button class="nav-link" data-page="settings"><span>⚙</span> Settings</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="help-card"><strong>Need help?</strong><p>Keep employee and payroll information up to date.</p></div>
+       
+      </div>
+    </aside>
 
-  <main>
-    <h2>Sample calculation</h2>
-    <p>Change the values below to see the result of hours multiplied by hourly rate.</p>
+    <main class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Toggle navigation">☰</button>
+        <div class="breadcrumb">Workspace <span>/</span> <strong id="pageCrumb">Dashboard</strong></div>
+        <div class="topbar-right"><span class="status-dot"></span><span class="admin-label">People operations</span><div class="avatar">A</div></div>
+      </header>
 
-    <label for="hours">
-      Hours worked
-      <input id="hours" type="number" min="0" step="0.25" value="40">
-    </label>
+      <section class="page active" id="dashboardPage">
+        <div class="page-heading">
+          <div><p class="eyebrow">WORKSPACE OVERVIEW</p><h1>Welcome back, <span id="greetingName">Admin</span> <span>👋</span></h1><p class="muted">Here’s a snapshot of your payroll workspace.</p></div>
+          <button class="primary-button" data-go="payroll">＋ Process payroll</button>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><span>Total employees</span><span class="stat-icon blue">♙</span></div><div class="stat-number" id="statEmployees">6</div><div class="stat-foot">Employees in your directory</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Gross payroll</span><span class="stat-icon purple">＄</span></div><div class="stat-number" id="statGross">$18,750.00</div><div class="stat-foot">Combined monthly salaries</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Total deductions</span><span class="stat-icon orange">−</span></div><div class="stat-number" id="statDeductions">$3,250.00</div><div class="stat-foot">Planning estimate only</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Estimated net pay</span><span class="stat-icon green">✓</span></div><div class="stat-number" id="statNet">$15,500.00</div><div class="stat-foot">After entered deductions</div></article>
+        </div>
+        <div class="content-grid">
+          <article class="panel wide-panel">
+            <div class="panel-heading"><div><h2>Employee directory</h2><p class="muted">A quick look at your people and compensation.</p></div><button class="text-button" data-go="employees">View all employees →</button></div>
+            <div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>DEPARTMENT</th><th>STATUS</th><th>MONTHLY SALARY</th></tr></thead><tbody id="recentEmployees"></tbody></table></div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Payroll checklist</h2><p class="muted">Suggested next steps</p></div></div>
+            <div class="checklist-item"><span class="check-circle">✓</span><div><strong>Review employee records</strong><p>Check employee details and salaries.</p></div></div>
+            <div class="checklist-item"><span class="check-circle">2</span><div><strong>Calculate payroll</strong><p>Enter hours and review pay totals.</p></div></div>
+            <div class="checklist-item"><span class="check-circle">3</span><div><strong>Export a report</strong><p>Download a CSV summary for review.</p></div></div>
+          </article>
+        </div>
+      </section>
 
-    <label for="rate">
-      Hourly rate ($)
-      <input id="rate" type="number" min="0" step="0.01" value="20">
-    </label>
+      <section class="page" id="employeesPage">
+        <div class="page-heading"><div><p class="eyebrow">PEOPLE</p><h1>Employees</h1><p class="muted">Manage your team, roles, and compensation.</p></div><button class="primary-button" id="addEmployeeButton">＋ Add employee</button></div>
+        <article class="panel">
+          <div class="toolbar"><div class="search-box"><span>⌕</span><input type="search" id="employeeSearch" placeholder="Search name, ID, or department" aria-label="Search employees"></div><span class="muted" id="employeeCount">6 employees</span></div>
+          <div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>DEPARTMENT</th><th>POSITION</th><th>MONTHLY SALARY</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="employeeTable"></tbody></table></div>
+          <p class="table-note"> Employee changes are saved in this browser.</p>
+        </article>
+      </section>
 
-    <output id="result" aria-live="polite">Gross pay: $800.00</output>
-  </main>
+      <section class="page" id="payrollPage">
+        <div class="page-heading"><div><p class="eyebrow">PAYMENT WORKSPACE</p><h1>Payroll processing</h1><p class="muted">Estimate gross pay, deductions, and net pay for an employee.</p></div></div>
+        <div class="content-grid payroll-grid">
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Payroll calculator</h2><p class="muted">Enter the details below to calculate an estimate.</p></div></div>
+            <form id="payrollForm" class="form-grid">
+              <label class="full">Employee<select id="payEmployee" required></select></label>
+              <label>Pay period start<input type="date" id="periodStart" required></label>
+              <label>Pay period end<input type="date" id="periodEnd" required></label>
+              <label>Regular hours<input type="number" id="regularHours" min="0" max="80" value="40" step="0.5" required></label>
+              <label>Overtime hours<input type="number" id="overtimeHours" min="0" max="40" value="0" step="0.5" required></label>
+              <label>Hourly rate ($)<input type="number" id="hourlyRate" min="0" value="25" step="0.01" required></label>
+              <label>Other deductions ($)<input type="number" id="otherDeductions" min="0" value="0" step="0.01" required></label>
+              <div class="full"><button class="primary-button full-button" type="submit">Calculate payroll</button></div>
+            </form>
+            <p class="small-note">Payroll figures are estimates. Tax withholding and statutory deductions are not included.</p>
+          </article>
+          <article class="panel results-panel">
+            <div class="panel-heading"><div><h2>Pay summary</h2><p class="muted">Your calculation will appear here.</p></div><span class="stat-icon green">＄</span></div>
+            <div id="payrollEmpty" class="empty-state"><div class="empty-icon">▤</div><strong>No calculation yet</strong><p>Complete the form and select Calculate payroll.</p></div>
+            <div id="payrollResults" class="hidden">
+              <div class="result-employee"><div class="avatar large" id="resultAvatar">JS</div><div><strong id="resultName">Employee Name</strong><p class="muted" id="resultPeriod">Pay period</p></div></div>
+              <div class="result-row"><span>Regular pay</span><strong id="resultRegular">$0.00</strong></div>
+              <div class="result-row"><span>Overtime pay (1.5×)</span><strong id="resultOvertime">$0.00</strong></div>
+              <div class="result-row"><span>Gross pay</span><strong id="resultGross">$0.00</strong></div>
+              <div class="result-row"><span>Other deductions</span><strong id="resultDeductions">$0.00</strong></div>
+              <div class="net-pay"><span>Estimated net pay</span><strong id="resultNet">$0.00</strong></div>
+              <button class="secondary-button full-button" id="printPayslip">Print / Save payslip</button>
+              <button class="text-button full-button" id="savePayroll">Save to pay history</button>
+            </div>
+          </article>
+        </div>
+        <article class="panel history-panel"><div class="panel-heading"><div><h2>Recent pay history</h2><p class="muted">Payroll calculations saved in this browser.</p></div><button class="secondary-button" id="exportPayroll">Export CSV</button></div><div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>PAY PERIOD</th><th>GROSS PAY</th><th>DEDUCTIONS</th><th>NET PAY</th></tr></thead><tbody id="payrollHistory"></tbody></table></div></article>
+      </section>
 
-  <script src="payroll.js" defer></script>
+      <section class="page" id="reportsPage">
+        <div class="page-heading"><div><p class="eyebrow">INSIGHTS</p><h1>Reports</h1><p class="muted">Review compensation totals and export your reports.</p></div><button class="primary-button" id="exportEmployees">↓ Export employees CSV</button></div>
+        <div class="stats-grid reports-stats">
+          <article class="stat-card"><div class="stat-top"><span>Employees</span><span class="stat-icon blue">♙</span></div><div class="stat-number" id="reportEmployees">6</div><div class="stat-foot">Currently in directory</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Monthly salary total</span><span class="stat-icon purple">＄</span></div><div class="stat-number" id="reportSalary">$18,750.00</div><div class="stat-foot">Sum of listed salaries</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Saved payroll runs</span><span class="stat-icon green">▤</span></div><div class="stat-number" id="reportRuns">0</div><div class="stat-foot">Saved in this browser</div></article>
+        </div>
+        <article class="panel"><div class="panel-heading"><div><h2>Department overview</h2><p class="muted">Monthly salary total by department.</p></div></div><div id="departmentReport" class="department-report"></div></article>
+      </section>
+        <section class="page" id="calendarPage">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">SCHEDULE</p>
+      <h1>Payroll Calendar</h1>
+      <p class="muted">Plan pay periods and keep track of important dates.</p>
+    </div>
+    <button class="primary-button" id="addCalendarEvent">
+      + Add reminder
+    </button>
+  </div>
+
+  <div class="content-grid calendar-layout">
+    <article class="panel calendar-panel">
+      <div class="calendar-toolbar">
+        <button class="secondary-button" id="prevMonth"
+                aria-label="Previous month">←</button>
+        <h2 id="calendarMonth">October 2026</h2>
+        <button class="secondary-button" id="nextMonth"
+                aria-label="Next month">→</button>
+        <button class="text-button" id="todayButton">Today</button>
+      </div>
+
+      <div class="calendar-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span>
+        <span>Wed</span><span>Thu</span><span>Fri</span>
+        <span>Sat</span>
+      </div>
+
+      <div id="calendarDays" class="calendar-days"></div>
+
+      <div class="calendar-legend">
+        <span><i class="legend-dot today-dot"></i> Today</span>
+        <span><i class="legend-dot event-dot"></i> Reminder</span>
+        <span><i class="legend-dot selected-dot"></i> Selected date</span>
+      </div>
+    </article>
+
+    <article class="panel calendar-events-panel">
+      <div class="panel-heading">
+        <div>
+          <h2 id="selectedDateTitle">Selected date</h2>
+          <p class="muted">Your scheduled payroll reminders</p>
+        </div>
+      </div>
+
+      <div id="selectedDateEvents" class="selected-date-events"></div>
+
+      <div class="calendar-tip">
+        <strong>Payroll tip</strong>
+        <p>Schedule reminders for timesheets, payroll review, and paydays.</p>
+      </div>
+    </article>
+  </div>
+
+  <p class="small-note">
+    Calendar reminders are saved in this browser.
+  </p>
+</section>
+
+      <section class="page" id="settingsPage">
+        <div class="page-heading">
+          <div><p class="eyebrow">WORKSPACE PREFERENCES</p><h1>Settings</h1><p class="muted">Configure the preferences used across your PayDesk workspace.</p></div>
+        </div>
+        <div class="settings-grid">
+          <article class="panel settings-panel">
+            <div class="panel-heading"><div><h2>Company profile</h2><p class="muted">Set the name displayed in your workspace.</p></div><span class="settings-icon">▣</span></div>
+            <label class="settings-field">Workspace name<input type="text" id="workspaceName" value="PayDesk" maxlength="60" placeholder="Your company name"></label>
+            <label class="settings-field">Administrator display name<input type="text" id="adminName" value="Admin" maxlength="60" placeholder="Your name"></label>
+          </article>
+          <article class="panel settings-panel">
+            <div class="panel-heading"><div><h2>Payroll preferences</h2><p class="muted">Choose default display and scheduling preferences.</p></div><span class="settings-icon">＄</span></div>
+            <label class="settings-field">Currency display<select id="currencySetting"><option value="USD">USD — US Dollar ($)</option><option value="EUR">EUR — Euro (€)</option><option value="GBP">GBP — British Pound (£)</option><option value="CAD">CAD — Canadian Dollar ($)</option></select></label>
+            <label class="settings-field">Default pay schedule<select id="payPeriodSetting"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="semimonthly">Semi-monthly</option><option value="monthly">Monthly</option></select></label>
+            <p class="settings-help">These preferences are saved in this browser. Currency and pay schedule are display preferences and do not change payroll calculation rules.</p>
+          </article>
+          <article class="panel settings-panel settings-security">
+            <div class="panel-heading"><div><h2>Data & privacy</h2><p class="muted">Understand where this workspace stores information.</p></div><span class="settings-icon">◇</span></div>
+            <div class="settings-info-row"><span class="info-mark">i</span><div><strong>Browser-based storage</strong><p>Employee records, reminders, settings, and saved calculations stay in this browser's local storage.</p></div></div>
+            <div class="settings-info-row"><span class="info-mark">!</span><div><strong>Before using real payroll data</strong><p>Connect a secure backend and database, add access controls, and validate payroll and tax rules.</p></div></div>
+          </article>
+        </div>
+        <div class="settings-actions"><p id="settingsMessage" class="settings-message" role="status" aria-live="polite"></p><button class="primary-button" id="saveSettings">Save preferences</button></div>
+      </section>
+      <footer class="footer"><span>PayDesk · Payroll Management System</span><span>Payroll & people operations workspace</span></footer>
+    </main>
+  </div>
+
+  <dialog id="employeeDialog" class="employee-dialog">
+    <form id="employeeForm" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">EMPLOYEE DIRECTORY</p><h2 id="dialogTitle">Add employee</h2></div><button type="button" class="close-button" id="closeDialog" aria-label="Close dialog">×</button></div>
+      <input type="hidden" id="editEmployeeId">
+      <label>Full name<input id="employeeName" required maxlength="80" placeholder="e.g. Jordan Lee"></label>
+      <div class="form-grid">
+        <label>Department<input id="employeeDepartment" required maxlength="50" placeholder="e.g. IT"></label>
+        <label>Position<input id="employeePosition" required maxlength="60" placeholder="e.g. Developer"></label>
+        <label class="full">Monthly salary ($)<input id="employeeSalary" type="number" required min="0" step="0.01" placeholder="3500"></label>
+      </div>
+      <div class="dialog-actions"><button type="button" class="secondary-button" id="cancelDialog">Cancel</button><button type="submit" class="primary-button">Save employee</button></div>
+    </form>
+  </dialog>
+  <dialog id="aboutDialog" class="employee-dialog">
+    <div class="dialog-heading"><div><p class="eyebrow">PROJECT INFORMATION</p><h2>About PayDesk</h2></div><button type="button" class="close-button" id="closeAbout" aria-label="Close dialog">×</button></div>
+    <p>PayDesk brings employee records, payroll estimates, scheduling, and reporting together in one workspace.</p>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
