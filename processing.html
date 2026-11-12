@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Estimate employee payroll and review pay history.">
+    <title>Payroll processing | PayDesk</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="./app.js" defer></script>
+  </head>
+  <body class="standalone-page">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-icon" aria-hidden="true">▦</span>
+          <span>PayDesk</span>
+        </div>
+        <div class="sidebar-label">WORKSPACE</div>
+        <nav class="navigation" aria-label="Workspace navigation">
+          <a class="nav-link" href="./index.html"><span aria-hidden="true">⌂</span>Dashboard</a>
+          <span class="nav-link" aria-disabled="true"><span aria-hidden="true">♙</span>Employees</span>
+          <a class="nav-link active" href="./processing.html" aria-current="page"><span aria-hidden="true">＄</span>Payroll</a>
+          <a class="nav-link" href="./calendar.html"><span aria-hidden="true">▦</span>Calendar</a>
+          <span class="nav-link" aria-disabled="true"><span aria-hidden="true">▤</span>Reports</span>
+          <span class="nav-link" aria-disabled="true"><span aria-hidden="true">⚙</span>Settings</span>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="help-card">
+            <strong>Need help?</strong>
+            <p>Keep employee and payroll information up to date.</p>
+          </div>
+        </div>
+      </aside>
+
+      <div class="main-area standalone-main">
+        <header class="topbar">
+          <div class="breadcrumb"><span>Workspace</span><span>/</span><strong>Payroll</strong></div>
+          <div class="topbar-right"><span class="status-dot"></span><span>People operations</span><span class="avatar">A</span></div>
+        </header>
+
+        <div class="standalone-content">
+          <section class="page-heading standalone-heading">
+            <p class="eyebrow">PAYMENT WORKSPACE</p>
+            <h1>Payroll processing</h1>
+            <p class="muted">Estimate gross pay, deductions, and net pay for an employee.</p>
+          </section>
+
+          <div class="payroll-grid">
+            <section class="panel calculator-card">
+              <h2>Payroll calculator</h2>
+              <p class="muted">Enter the details below to calculate an estimate.</p>
+              <label class="field employee-field" for="employee">
+                <span>Employee</span>
+                <select id="employee">
+                  <option value="Jordan Lee|IT">Jordan Lee — IT</option>
+                  <option value="Maria Santos|Finance">Maria Santos — Finance</option>
+                  <option value="David Kim|Operations">David Kim — Operations</option>
+                </select>
+              </label>
+              <div class="form-grid">
+                <label class="field" for="period-start"><span>Pay period start</span><input id="period-start" type="date" value="2026-10-01"></label>
+                <label class="field" for="period-end"><span>Pay period end</span><input id="period-end" type="date" value="2026-10-15"></label>
+                <label class="field" for="regular-hours"><span>Regular hours</span><input id="regular-hours" type="number" min="0" step="0.01" value="40"></label>
+                <label class="field" for="overtime-hours"><span>Overtime hours</span><input id="overtime-hours" type="number" min="0" step="0.01" value="5"></label>
+                <label class="field" for="hourly-rate"><span>Hourly rate ($)</span><input id="hourly-rate" type="number" min="0" step="0.01" value="25.00"></label>
+                <label class="field" for="deductions"><span>Other deductions ($)</span><input id="deductions" type="number" min="0" step="0.01" value="125.00"></label>
+              </div>
+              <button class="primary-button" id="calculate-payroll" type="button">Calculate payroll</button>
+              <p class="estimate-note">Payroll figures are estimates. Tax withholding and statutory deductions are not included.</p>
+              <span class="sr-status" id="payroll-status" role="status" aria-live="polite"></span>
+            </section>
+
+            <section class="panel summary-card" aria-labelledby="summary-title">
+              <div class="summary-heading">
+                <div><h2 id="summary-title">Pay summary</h2><p class="muted">Estimated amounts for this pay period</p></div>
+                <span class="money-badge" aria-hidden="true">＄</span>
+              </div>
+              <div class="employee-summary">
+                <span class="employee-avatar" id="employee-initials">JL</span>
+                <div><strong id="summary-employee">Jordan Lee</strong><span id="summary-period">Oct 1, 2026 – Oct 15, 2026</span></div>
+              </div>
+              <dl class="summary-list">
+                <div><dt>Regular pay</dt><dd id="regular-pay">$1,000.00</dd></div>
+                <div><dt>Overtime pay (1.5×)</dt><dd id="overtime-pay">$187.50</dd></div>
+                <div><dt>Gross pay</dt><dd id="gross-pay">$1,187.50</dd></div>
+                <div><dt>Other deductions</dt><dd id="deduction-total">$125.00</dd></div>
+              </dl>
+              <div class="net-total"><strong>Estimated net pay</strong><strong id="net-pay">$1,062.50</strong></div>
+              <button class="secondary-button" id="print-payslip" type="button">Print / Save payslip</button>
+            </section>
+          </div>
+
+          <section class="panel history-section">
+            <div class="section-heading">
+              <div><h2>Recent pay history</h2><p class="muted">Payroll calculations saved in this browser.</p></div>
+              <button class="secondary-button export-button" id="export-csv" type="button">Export CSV</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>EMPLOYEE</th><th>PAY PERIOD</th><th>GROSS PAY</th><th>DEDUCTIONS</th><th>NET PAY</th></tr></thead>
+                <tbody><tr><td id="history-employee">Jordan Lee</td><td id="history-period">Oct 1, 2026–Oct 15, 2026</td><td id="history-gross">$1,187.50</td><td id="history-deductions">$125.00</td><td id="history-net">$1,062.50</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+        <footer class="standalone-footer"><span>PayDesk · Payroll Management System</span><span>Payroll &amp; people operations workspace</span></footer>
+      </div>
+    </div>
+  </body>
+</html>
