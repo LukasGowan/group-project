@@ -210,3 +210,81 @@
 .settings-message{font-size:12px;color:var(--green);margin:0}
 .nav-link:focus-visible,.primary-button:focus-visible,.secondary-button:focus-visible,.text-button:focus-visible,.calendar-day:focus-visible{outline:3px solid #8db2ff;outline-offset:2px}
 @media(max-width:760px){.calendar-day{min-height:48px}.calendar-toolbar h2{font-size:14px}.calendar-layout{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.settings-security{grid-column:auto}.settings-actions{align-items:stretch;flex-direction:column-reverse}.settings-actions .primary-button{width:100%}}
+
+/* Standalone payroll and calendar pages */
+.standalone-page .sidebar{position:sticky;top:0;height:100vh}
+.standalone-page .nav-link{text-decoration:none}
+.standalone-main{padding:0 32px;min-height:100vh}
+.standalone-content{width:100%;max-width:1160px;margin:0 auto;flex:1;padding-bottom:24px}
+.standalone-heading{display:block;margin:10px 0 24px}
+.standalone-heading .muted{margin:8px 0 0}
+.standalone-page .payroll-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.9fr);gap:20px;margin-bottom:22px}
+.standalone-page .panel{min-width:0}
+.standalone-page .calculator-card,.standalone-page .summary-card,.standalone-page .calendar-card,.standalone-page .upcoming-card,.standalone-page .legend-card{padding:21px}
+.standalone-page .calculator-card h2,.standalone-page .summary-card h2,.standalone-page .history-section h2,.standalone-page .calendar-side h2{margin-bottom:5px}
+.standalone-page .calculator-card>.muted{margin-bottom:18px}
+.standalone-page .employee-field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;color:#465a75;font-size:12px;font-weight:700}
+.standalone-page .form-grid{gap:12px 16px}
+.standalone-page .form-grid .field{display:flex;flex-direction:column;gap:7px;color:#465a75;font-size:12px;font-weight:700}
+.standalone-page .calculator-card>.primary-button{width:100%;margin-top:22px}
+.standalone-page .estimate-note{margin:17px 0 0;color:var(--muted);font-size:11px;line-height:1.6}
+.standalone-page .sr-status{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.standalone-page .summary-heading{display:flex;align-items:flex-start;justify-content:space-between}
+.standalone-page .summary-heading .muted{margin-bottom:0}
+.standalone-page .money-badge,.standalone-page .employee-avatar{display:grid;place-items:center;flex:0 0 auto;border-radius:10px}
+.standalone-page .money-badge{width:36px;height:37px;background:#e4f8ef;color:#139663;font-size:19px}
+.standalone-page .employee-summary{display:flex;align-items:center;gap:14px;margin-top:18px;padding:14px;border-radius:9px;background:#f6f8fc}
+.standalone-page .employee-avatar{width:40px;height:40px;border-radius:50%;background:#e7efff;color:#245bd0;font-size:12px;font-weight:700}
+.standalone-page .employee-summary div{display:flex;flex-direction:column;gap:6px}
+.standalone-page .employee-summary strong{font-size:13px;color:#243b59}
+.standalone-page .employee-summary .muted{font-size:12px}
+.standalone-page .summary-list{margin:8px 0 0}
+.standalone-page .summary-list div{display:flex;min-height:46px;align-items:center;justify-content:space-between;border-bottom:1px solid #edf0f5;color:var(--muted);font-size:12px}
+.standalone-page .summary-list dd{margin:0;color:#2d405a;font-size:12px;font-weight:700}
+.standalone-page .net-total{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:20px;padding:16px;border-radius:9px;background:#edf4ff;color:#2259c7;font-weight:700}
+.standalone-page .summary-card>.secondary-button{width:100%;margin-top:15px;text-align:left}
+.standalone-page .history-section{margin-top:22px}
+.standalone-page .section-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.standalone-page .section-heading .muted{margin:0}
+.standalone-page .export-button{white-space:nowrap}
+.standalone-page .history-section.panel{padding:20px}
+.standalone-page .table-wrap{border:1px solid var(--line);border-radius:10px}
+.standalone-page .table-wrap th{padding:12px 16px}
+.standalone-page .table-wrap td{padding:13px 16px}
+.standalone-page .calendar-intro{display:flex;align-items:flex-end}
+.standalone-page .calendar-intro>div{flex:1}
+.standalone-page .calendar-intro .primary-button{margin-bottom:25px;white-space:nowrap}
+.standalone-page .event-form{display:grid;grid-template-columns:minmax(220px,1fr) 200px auto;align-items:end;gap:16px;margin-bottom:20px;padding:18px}
+.standalone-page .event-form[hidden]{display:none}
+.standalone-page .event-form .field{display:flex;flex-direction:column;gap:7px;color:#465a75;font-size:12px;font-weight:700}
+.standalone-page .calendar-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
+.standalone-page .calendar-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.standalone-page .calendar-toolbar h2{margin:0}
+.standalone-page .calendar-toolbar>div{display:flex}
+.standalone-page .calendar-toolbar button{min-width:36px;height:36px;border:1px solid #d6dfec;background:white;color:#344761;font-size:18px}
+.standalone-page .calendar-toolbar .today-button{padding:0 14px;border-right:0;border-left:0;font-size:12px}
+.standalone-page .calendar-weekdays,.standalone-page .calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0}
+.standalone-page .calendar-weekdays{margin:0 0 8px}
+.standalone-page .calendar-weekdays span{padding:8px 0;text-align:center}
+.standalone-page .calendar-grid{overflow:hidden;border-top:1px solid var(--line);border-left:1px solid var(--line);border-radius:8px}
+.standalone-page .calendar-day{height:94px;min-height:0;align-items:flex-start;gap:9px;padding:9px;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;text-align:left}
+.standalone-page .calendar-day:hover{background:#f8faff}
+.standalone-page .calendar-day.muted{background:#f8f9fb;color:#b8c0cc}
+.standalone-page .calendar-day.selected>span{display:grid;width:25px;height:25px;place-items:center;margin:-5px;border-radius:50%;background:var(--blue);color:white}
+.standalone-page .calendar-day small{width:100%;overflow:hidden;padding:5px 6px;border-radius:4px;background:#e7efff;color:#245bd0;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.standalone-page .calendar-day small.warning{background:#fff4d8;color:#9b6713}
+.standalone-page .calendar-day small.payday{background:#e0f8ef;color:#139663}
+.standalone-page .calendar-side{display:flex;flex-direction:column;gap:20px}
+.standalone-page .date-tile{display:inline-flex;width:69px;height:76px;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-top:18px;border-radius:9px;background:#e7efff;color:#245bd0}
+.standalone-page .date-tile span{font-size:11px;font-weight:700}
+.standalone-page .date-tile strong{font:800 28px Manrope,sans-serif}
+.standalone-page .upcoming-details{display:flex;flex-direction:column;gap:8px;margin:16px 0 20px}
+.standalone-page .upcoming-details strong{font-size:13px}
+.standalone-page .upcoming-details span{color:var(--muted);font-size:11px}
+.standalone-page .payroll-link{display:flex;align-items:center;justify-content:center;text-decoration:none}
+.standalone-page .legend-card p{display:flex;align-items:center;gap:10px;margin:15px 0 0;color:#56657b;font-size:12px}
+.standalone-page .legend-dot{width:9px;height:9px;flex:0 0 auto}
+.standalone-footer{display:flex;justify-content:space-between;gap:16px;max-width:1160px;width:100%;margin:0 auto;padding:0 0 14px;color:var(--muted);font-size:10px}
+@media(max-width:980px){.standalone-page .payroll-grid,.standalone-page .calendar-layout{grid-template-columns:1fr}.standalone-page .calendar-side{display:grid;grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.standalone-page .app-shell{display:block}.standalone-page .sidebar{position:relative;width:100%;height:auto}.standalone-page .brand{padding-bottom:18px}.standalone-page .navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.standalone-page .sidebar-label,.standalone-page .sidebar-bottom{display:none}.standalone-main{width:100%;padding:0 18px}.standalone-page .topbar{margin:0 0 20px}.standalone-page .topbar-right>span:not(.status-dot):not(.avatar){display:none}.standalone-page .calendar-layout,.standalone-page .event-form,.standalone-page .calendar-side{grid-template-columns:1fr}.standalone-page .calendar-intro{align-items:flex-start;flex-direction:column}.standalone-page .calendar-intro .primary-button{margin:0 0 18px}.standalone-page .calendar-day{height:68px;padding:6px;gap:6px}.standalone-page .calendar-day small{padding:3px;font-size:8px}.standalone-footer{padding:0 0 16px}.standalone-footer span:last-child{display:none}}
+@media print{.standalone-page .sidebar,.standalone-page .topbar,.standalone-page .calculator-card,.standalone-page .history-section,.standalone-footer{display:none}.standalone-main{padding:0}.standalone-page .payroll-grid{display:block}.standalone-page .summary-card{max-width:600px;margin:0 auto}}
