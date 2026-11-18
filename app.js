@@ -3,12 +3,14 @@ const money = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
+// Format dates for payroll and calendar displays.
 function formatDate(value, options = { month: "short", day: "numeric", year: "numeric" }) {
   if (!value) return "—";
   const date = new Date(`${value}T00:00:00`);
   return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString("en-US", options);
 }
 
+// Existing payroll functionality.
 function initializePayroll() {
   const calculateButton = document.querySelector("#calculate-payroll");
   if (!calculateButton) return;
@@ -22,6 +24,7 @@ function initializePayroll() {
     deductions: document.querySelector("#deductions"),
     employee: document.querySelector("#employee"),
   };
+
   const output = (id) => document.querySelector(`#${id}`);
   let latest = null;
 
@@ -35,18 +38,32 @@ function initializePayroll() {
     const deductions = Number(fields.deductions.value);
     const net = gross - deductions;
     const period = `${formatDate(fields.start.value)} – ${formatDate(fields.end.value)}`;
-    latest = { name, start: fields.start.value, end: fields.end.value, gross, deductions, net };
+
+    latest = {
+      name,
+      start: fields.start.value,
+      end: fields.end.value,
+      gross,
+      deductions,
+      net,
+    };
 
     output("summary-employee").textContent = name;
-    output("employee-initials").textContent = name.split(/\s+/).map((part) => part[0]).join("");
+    output("employee-initials").textContent = name
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("");
+
     output("summary-period").textContent = period;
     output("regular-pay").textContent = money.format(regularPay);
     output("overtime-pay").textContent = money.format(overtimePay);
     output("gross-pay").textContent = money.format(gross);
     output("deduction-total").textContent = money.format(deductions);
     output("net-pay").textContent = money.format(net);
+
     output("history-employee").textContent = name;
-    output("history-period").textContent = `${formatDate(fields.start.value)}–${formatDate(fields.end.value)}`;
+    output("history-period").textContent =
+      `${formatDate(fields.start.value)}–${formatDate(fields.end.value)}`;
     output("history-gross").textContent = money.format(gross);
     output("history-deductions").textContent = money.format(deductions);
     output("history-net").textContent = money.format(net);
@@ -54,11 +71,17 @@ function initializePayroll() {
   }
 
   calculateButton.addEventListener("click", calculate);
-  document.querySelector("#print-payslip").addEventListener("click", () => window.print());
+
+  document.querySelector("#print-payslip").addEventListener("click", () => {
+    window.print();
+  });
+
   document.querySelector("#export-csv").addEventListener("click", () => {
     if (!latest) calculate();
     if (!latest) return;
+
     const csvCell = (value) => `"${String(value).replaceAll('"', '""')}"`;
+
     const rows = [
       ["Employee", "Pay period", "Gross pay", "Deductions", "Net pay"],
       [
@@ -69,18 +92,24 @@ function initializePayroll() {
         latest.net.toFixed(2),
       ],
     ];
-    const blob = new Blob([rows.map((row) => row.map(csvCell).join(",")).join("\r\n")], {
-      type: "text/csv;charset=utf-8",
-    });
+
+    const blob = new Blob(
+      [rows.map((row) => row.map(csvCell).join(",")).join("\r\n")],
+      { type: "text/csv;charset=utf-8" }
+    );
+
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
+
     link.href = url;
     link.download = "payroll-history.csv";
     link.click();
+
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 }
 
+// Calendar and employee shift scheduling.
 function initializeCalendar() {
   const grid = document.querySelector("#calendar-grid");
   if (!grid) return;
@@ -88,66 +117,177 @@ function initializeCalendar() {
   const monthHeading = document.querySelector("#calendar-month");
   const currentMonthLabel = document.querySelector("#payday-month");
   const paydayDate = document.querySelector("#payday-date");
+  const paydayDay = document.querySelector(".date-tile strong");
+
   const eventForm = document.querySelector("#event-form");
   const eventToggle = document.querySelector("#toggle-event-form");
-  const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
-  let visibleMonth = new Date(2026, 9, 1);
-  let selectedDate = new Date(2026, 9, 15);
-  const customEvents = new Map();
+
+  const shiftForm = document.querySelector("#shift-form");
+  const shiftToggle = document.querySelector("#toggle-shift-form");
+  const cancelShift = document.querySelector("#cancel-shift");
+
+  const monthFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const today = new Date();
+  let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  // Browser storage keys for the classroom demonstration.
+  const SHIFTS_KEY = "paydesk_employee_shifts";
+  const EVENTS_KEY = "paydesk_payroll_events";
+
+  function loadSavedData(key, fallback) {
+    try {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : fallback;
+    } catch (error) {
+      console.warn(`Unable to load ${key}:`, error);
+      return fallback;
+    }
+  }
+
+  let employeeShifts = loadSavedData(SHIFTS_KEY, []);
+  let savedEvents = loadSavedData(EVENTS_KEY, {});
+
+  if (!Array.isArray(employeeShifts)) employeeShifts = [];
+  if (!savedEvents || typeof savedEvents !== "object" || Array.isArray(savedEvents)) {
+    savedEvents = {};
+  }
+
+  const customEvents = new Map(Object.entries(savedEvents));
+
+  function saveData(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error("Unable to save calendar data:", error);
+      alert("Your browser could not save the information.");
+      return false;
+    }
+  }
 
   function isoDate(date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    return (
+      `${date.getFullYear()}-` +
+      `${String(date.getMonth() + 1).padStart(2, "0")}-` +
+      `${String(date.getDate()).padStart(2, "0")}`
+    );
+  }
+
+  // Reject impossible dates, such as February 30.
+  function validDate(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+    const date = new Date(`${value}T00:00:00`);
+
+    return (
+      !Number.isNaN(date.getTime()) &&
+      isoDate(date) === value
+    );
+  }
+
+  function getShiftsForDate(date) {
+    return employeeShifts
+      .filter((shift) => shift.date === date && shift.status !== "Cancelled")
+      .sort((a, b) => a.start.localeCompare(b.start));
+  }
+
+  // Check whether the employee already has an overlapping shift.
+  function hasShiftConflict(employeeId, date, start, end) {
+    return employeeShifts.some((shift) => {
+      return (
+        shift.employeeId === employeeId &&
+        shift.date === date &&
+        shift.status !== "Cancelled" &&
+        start < shift.end &&
+        end > shift.start
+      );
+    });
   }
 
   function render() {
     const year = visibleMonth.getFullYear();
     const month = visibleMonth.getMonth();
+
     const firstWeekday = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const cellCount = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
     const firstCell = new Date(year, month, 1 - firstWeekday);
 
     monthHeading.textContent = monthFormatter.format(visibleMonth);
-    currentMonthLabel.textContent = visibleMonth.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+
+    currentMonthLabel.textContent = visibleMonth
+      .toLocaleDateString("en-US", { month: "short" })
+      .toUpperCase();
+
     const payday = new Date(year, month, 15);
+
     paydayDate.textContent = payday.toLocaleDateString("en-US", {
       weekday: "long",
       month: "short",
       day: "numeric",
       year: "numeric",
     });
+
+    if (paydayDay) paydayDay.textContent = "15";
+
     grid.replaceChildren();
 
     for (let index = 0; index < cellCount; index += 1) {
-      const date = new Date(firstCell.getFullYear(), firstCell.getMonth(), firstCell.getDate() + index);
+      const date = new Date(
+        firstCell.getFullYear(),
+        firstCell.getMonth(),
+        firstCell.getDate() + index
+      );
+
       const inMonth = date.getMonth() === month;
       const key = isoDate(date);
+
       const dayButton = document.createElement("button");
       dayButton.type = "button";
-      dayButton.className = `calendar-day${inMonth ? "" : " muted"}${inMonth && key === isoDate(selectedDate) ? " selected" : ""}`;
+
+      dayButton.className =
+        `calendar-day${inMonth ? "" : " muted"}` +
+        `${inMonth && key === isoDate(selectedDate) ? " selected" : ""}`;
+
       dayButton.setAttribute("role", "gridcell");
-      dayButton.setAttribute("aria-label", date.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }));
+
+      dayButton.setAttribute(
+        "aria-label",
+        date.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
+      );
 
       const dayNumber = document.createElement("span");
       dayNumber.textContent = String(date.getDate());
       dayButton.append(dayNumber);
 
+      // Existing payroll event labels.
       let note = customEvents.get(key);
       let noteClass = "";
-      if (!note && inMonth && date.getDate() === 1) note = "Pay period begins";
+
+      if (!note && inMonth && date.getDate() === 1) {
+        note = "Pay period begins";
+      }
+
       if (!note && inMonth && date.getDate() === 14) {
         note = "Timesheets due";
         noteClass = "warning";
       }
+
       if (!note && inMonth && date.getDate() === 15) {
         note = "Payday";
         noteClass = "payday";
       }
+
       if (note) {
         const label = document.createElement("small");
         label.className = noteClass;
@@ -155,7 +295,20 @@ function initializeCalendar() {
         dayButton.append(label);
       }
 
+      // Display saved employee shifts beneath payroll events.
       if (inMonth) {
+        const dayShifts = getShiftsForDate(key);
+
+        dayShifts.forEach((shift) => {
+          const shiftLabel = document.createElement("small");
+
+          shiftLabel.className = "employee-shift";
+          shiftLabel.textContent =
+            `Emp ${shift.employeeId}: ${shift.start}–${shift.end}`;
+
+          dayButton.append(shiftLabel);
+        });
+
         dayButton.addEventListener("click", () => {
           selectedDate = date;
           render();
@@ -163,44 +316,183 @@ function initializeCalendar() {
       } else {
         dayButton.disabled = true;
       }
+
       grid.append(dayButton);
     }
   }
 
+  // Existing calendar navigation.
   document.querySelector("#previous-month").addEventListener("click", () => {
-    visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+    visibleMonth = new Date(
+      visibleMonth.getFullYear(),
+      visibleMonth.getMonth() - 1,
+      1
+    );
+
     render();
   });
+
   document.querySelector("#next-month").addEventListener("click", () => {
-    visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+    visibleMonth = new Date(
+      visibleMonth.getFullYear(),
+      visibleMonth.getMonth() + 1,
+      1
+    );
+
     render();
   });
+
   document.querySelector("#today").addEventListener("click", () => {
-    visibleMonth = new Date(2026, 9, 1);
-    selectedDate = new Date(2026, 9, 15);
+    const currentDate = new Date();
+
+    visibleMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
+
+    selectedDate = currentDate;
     render();
   });
+
+  // Existing payroll event form.
   eventToggle.addEventListener("click", () => {
     eventForm.hidden = !eventForm.hidden;
-    eventToggle.setAttribute("aria-expanded", String(!eventForm.hidden));
-    eventToggle.textContent = eventForm.hidden ? "+ Add payroll event" : "Close event form";
-    if (!eventForm.hidden) document.querySelector("#event-title").focus();
+
+    eventToggle.setAttribute(
+      "aria-expanded",
+      String(!eventForm.hidden)
+    );
+
+    eventToggle.textContent = eventForm.hidden
+      ? "+ Add payroll event"
+      : "Close event form";
+
+    if (!eventForm.hidden) {
+      document.querySelector("#event-title").focus();
+    }
   });
+
   eventForm.addEventListener("submit", (event) => {
     event.preventDefault();
+
     const title = document.querySelector("#event-title").value.trim();
-    const eventDate = new Date(`${document.querySelector("#event-date").value}T00:00:00`);
-    if (!title || Number.isNaN(eventDate.getTime())) return;
-    customEvents.set(isoDate(eventDate), title);
-    visibleMonth = new Date(eventDate.getFullYear(), eventDate.getMonth(), 1);
+    const dateValue = document.querySelector("#event-date").value;
+
+    if (!title || !validDate(dateValue)) {
+      alert("Please enter a valid payroll event.");
+      return;
+    }
+
+    const eventDate = new Date(`${dateValue}T00:00:00`);
+
+    const updatedEvents = Object.fromEntries(customEvents);
+    updatedEvents[dateValue] = title;
+
+    if (!saveData(EVENTS_KEY, updatedEvents)) return;
+
+    customEvents.set(dateValue, title);
+
+    visibleMonth = new Date(
+      eventDate.getFullYear(),
+      eventDate.getMonth(),
+      1
+    );
+
     selectedDate = eventDate;
+
     eventForm.reset();
-    document.querySelector("#event-date").value = isoDate(eventDate);
+    document.querySelector("#event-date").value = dateValue;
+
     eventForm.hidden = true;
     eventToggle.setAttribute("aria-expanded", "false");
     eventToggle.textContent = "+ Add payroll event";
+
     render();
   });
+
+  // Employee shift scheduling.
+  if (shiftForm && shiftToggle) {
+    // The calendar.html file already contains the open/close script.
+    // We leave that script responsible for showing the form.
+
+    shiftForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const employeeId = document
+        .querySelector("#shift-employee")
+        .value.trim();
+
+      const shiftDate = document.querySelector("#shift-date").value;
+      const startTime = document.querySelector("#shift-start").value;
+      const endTime = document.querySelector("#shift-end").value;
+      const shiftStatus = document.querySelector("#shift-status").value;
+
+      if (!/^[1-9]\d*$/.test(employeeId)) {
+        alert("Enter a valid positive employee ID.");
+        return;
+      }
+
+      if (!validDate(shiftDate)) {
+        alert("Enter a valid shift date.");
+        return;
+      }
+
+      if (!startTime || !endTime) {
+        alert("Enter both the start and end times.");
+        return;
+      }
+
+      // This demonstration supports same-day shifts only.
+      if (endTime <= startTime) {
+        alert("End time must be later than start time.");
+        return;
+      }
+
+      if (
+        shiftStatus !== "Cancelled" &&
+        hasShiftConflict(employeeId, shiftDate, startTime, endTime)
+      ) {
+        alert(
+          "Scheduling conflict: this employee already has a shift during that time."
+        );
+        return;
+      }
+
+      const newShift = {
+        id: Date.now(),
+        employeeId,
+        date: shiftDate,
+        start: startTime,
+        end: endTime,
+        status: shiftStatus,
+      };
+
+      const updatedShifts = [...employeeShifts, newShift];
+
+      if (!saveData(SHIFTS_KEY, updatedShifts)) return;
+
+      employeeShifts = updatedShifts;
+
+      const savedDate = new Date(`${shiftDate}T00:00:00`);
+
+      visibleMonth = new Date(
+        savedDate.getFullYear(),
+        savedDate.getMonth(),
+        1
+      );
+
+      selectedDate = savedDate;
+
+      shiftForm.reset();
+      shiftForm.hidden = true;
+      shiftToggle.setAttribute("aria-expanded", "false");
+
+      render();
+
+      alert("Employee shift saved successfully!");
+    });
+  }
 
   render();
 }
