@@ -29,7 +29,7 @@ function initializePayroll() {
   let latest = null;
 
   function calculate() {
-    if (Object.values(fields).some((field) => !field.reportValidity())) return;
+    if (Object.values(fields).some((field) => !field.reportValidity()) return;
 
     const [name] = fields.employee.value.split("|");
     const regularPay = Number(fields.regularHours.value) * Number(fields.hourlyRate.value);
@@ -124,7 +124,6 @@ function initializeCalendar() {
 
   const shiftForm = document.querySelector("#shift-form");
   const shiftToggle = document.querySelector("#toggle-shift-form");
-  const cancelShift = document.querySelector("#cancel-shift");
 
   const monthFormatter = new Intl.DateTimeFormat("en-US", {
     month: "long",
@@ -158,6 +157,81 @@ function initializeCalendar() {
   }
 
   const customEvents = new Map(Object.entries(savedEvents));
+
+  // GOOGLE CALENDAR API INTEGRATION
+  // Replace this placeholder with your restricted Google Cloud API key.
+  const GOOGLE_CALENDAR_API_KEY = "PASTE_YOUR_RESTRICTED_API_KEY_HERE";
+
+  // Public U.S. holidays calendar.
+  const HOLIDAY_CALENDAR_ID = "en.usa#holiday@group.v.calendar.google.com";
+
+  const holidayCache = new Map();
+  const holidayRequests = new Set();
+
+  // Retrieve public holidays from Google Calendar.
+  async function loadHolidays(year, month) {
+    if (GOOGLE_CALENDAR_API_KEY === "PASTE_YOUR_RESTRICTED_API_KEY_HERE") {
+      return;
+    }
+
+    const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+
+    if (holidayCache.has(monthKey) || holidayRequests.has(monthKey)) {
+      return;
+    }
+
+    holidayRequests.add(monthKey);
+
+    const first = new Date(Date.UTC(year, month, 1));
+    const afterLast = new Date(Date.UTC(year, month + 1, 1));
+
+    const params = new URLSearchParams({
+      key: GOOGLE_CALENDAR_API_KEY,
+      timeMin: first.toISOString(),
+      timeMax: afterLast.toISOString(),
+      singleEvents: "true",
+      maxResults: "250",
+      fields: "items(summary,start),nextPageToken",
+    });
+
+    const url =
+      `https://www.googleapis.com/calendar/v3/calendars/` +
+      `${encodeURIComponent(HOLIDAY_CALENDAR_ID)}/events?${params}`;
+
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Google Calendar API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      const holidays = new Map();
+
+      for (const item of data.items || []) {
+        const date = item.start?.date || item.start?.dateTime?.slice(0, 10);
+
+        if (date && item.summary) {
+          const names = holidays.get(date) || [];
+          names.push(item.summary);
+          holidays.set(date, names);
+        }
+      }
+
+      holidayCache.set(monthKey, holidays);
+
+      if (
+        visibleMonth.getFullYear() === year &&
+        visibleMonth.getMonth() === month
+      ) {
+        render();
+      }
+    } catch (error) {
+      console.error("Unable to load public holidays:", error);
+    } finally {
+      holidayRequests.delete(monthKey);
+    }
+  }
 
   function saveData(key, value) {
     try {
@@ -212,6 +286,12 @@ function initializeCalendar() {
   function render() {
     const year = visibleMonth.getFullYear();
     const month = visibleMonth.getMonth();
+    const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+
+    const holidays = holidayCache.get(monthKey);
+
+    // Load holidays when the calendar month changes.
+    void loadHolidays(year, month);
 
     const firstWeekday = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -293,6 +373,18 @@ function initializeCalendar() {
         label.className = noteClass;
         label.textContent = note;
         dayButton.append(label);
+      }
+
+      // GOOGLE CALENDAR API: Display U.S. holidays.
+      if (inMonth && holidays?.has(key)) {
+        for (const holidayName of holidays.get(key)) {
+          const holidayLabel = document.createElement("small");
+
+          holidayLabel.className = "calendar-holiday";
+          holidayLabel.textContent = `Holiday: ${holidayName}`;
+
+          dayButton.append(holidayLabel);
+        }
       }
 
       // Display saved employee shifts beneath payroll events.
@@ -413,8 +505,7 @@ function initializeCalendar() {
 
   // Employee shift scheduling.
   if (shiftForm && shiftToggle) {
-    // The calendar.html file already contains the open/close script.
-    // We leave that script responsible for showing the form.
+    // calendar.html already handles opening and closing the form.
 
     shiftForm.addEventListener("submit", (event) => {
       event.preventDefault();
