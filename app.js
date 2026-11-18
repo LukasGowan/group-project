@@ -160,7 +160,7 @@ function initializeCalendar() {
 
   // GOOGLE CALENDAR API INTEGRATION
   // Replace this placeholder with your restricted Google Cloud API key.
-  const GOOGLE_CALENDAR_API_KEY = "AIzaSyCO0UPNnZtQItclgXeDeovmeol_qYHLFJQ";
+  const GOOGLE_CALENDAR_API_KEY = "place here";
   
   // Public U.S. holidays calendar.
   const HOLIDAY_CALENDAR_ID = "en.usa#holiday@group.v.calendar.google.com";
@@ -170,7 +170,7 @@ function initializeCalendar() {
 
   // Retrieve public holidays from Google Calendar.
   async function loadHolidays(year, month) {
-    if (GOOGLE_CALENDAR_API_KEY === "AIzaSyCO0UPNnZtQItclgXeDeovmeol_qYHLFJQ") {
+    if (GOOGLE_CALENDAR_API_KEY === "place here") {
       return;
     }
 
