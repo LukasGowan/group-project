@@ -28,8 +28,11 @@ function initializePayroll() {
   const output = (id) => document.querySelector(`#${id}`);
   let latest = null;
 
-  function calculate() {
-if (Object.values(fields).some((field) => !field.reportValidity())) return;
+  function calculate() {for (const field of Object.values(fields)) {
+    if (!field.reportValidity()) {
+        return;
+    }
+}
     const [name] = fields.employee.value.split("|");
     const regularPay = Number(fields.regularHours.value) * Number(fields.hourlyRate.value);
     const overtimePay = Number(fields.overtimeHours.value) * Number(fields.hourlyRate.value) * 1.5;
