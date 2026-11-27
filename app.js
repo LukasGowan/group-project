@@ -126,6 +126,7 @@ function initializeCalendar() {
 
   const shiftForm = document.querySelector("#shift-form");
   const shiftToggle = document.querySelector("#toggle-shift-form");
+  const deleteCalendarItem = document.querySelector("#delete-calendar-item");
 
   const monthFormatter = new Intl.DateTimeFormat("en-US", {
     month: "long",
@@ -133,8 +134,11 @@ function initializeCalendar() {
   });
 
   const today = new Date();
+  const eventDateInput = document.querySelector("#event-date");
+  eventDateInput.value = isoDate(today);
   let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  let selectedCalendarItem = null;
 
   // Browser storage keys for the classroom demonstration.
   const SHIFTS_KEY = "paydesk_employee_shifts";
@@ -329,16 +333,23 @@ function initializeCalendar() {
       const inMonth = date.getMonth() === month;
       const key = isoDate(date);
 
-      const dayButton = document.createElement("button");
-      dayButton.type = "button";
-
-      dayButton.className =
+      const dayCell = document.createElement("div");
+      dayCell.className =
         `calendar-day${inMonth ? "" : " muted"}` +
         `${inMonth && key === isoDate(selectedDate) ? " selected" : ""}`;
+      dayCell.setAttribute("role", "gridcell");
+      dayCell.addEventListener("click", (event) => {
+        if (!inMonth || event.target.closest(".calendar-item")) return;
+        selectedDate = date;
+        selectedCalendarItem = null;
+        render();
+      });
 
-      dayButton.setAttribute("role", "gridcell");
-
-      dayButton.setAttribute(
+      const dateButton = document.createElement("button");
+      dateButton.type = "button";
+      dateButton.className = "calendar-date";
+      dateButton.disabled = !inMonth;
+      dateButton.setAttribute(
         "aria-label",
         date.toLocaleDateString("en-US", {
           weekday: "long",
@@ -347,10 +358,10 @@ function initializeCalendar() {
           year: "numeric",
         })
       );
-
       const dayNumber = document.createElement("span");
       dayNumber.textContent = String(date.getDate());
-      dayButton.append(dayNumber);
+      dateButton.append(dayNumber);
+      dayCell.append(dateButton);
 
       // Existing payroll event labels.
       let note = customEvents.get(key);
@@ -371,10 +382,28 @@ function initializeCalendar() {
       }
 
       if (note) {
-        const label = document.createElement("small");
-        label.className = noteClass;
-        label.textContent = note;
-        dayButton.append(label);
+        if (customEvents.has(key)) {
+          const eventButton = document.createElement("button");
+          eventButton.type = "button";
+          eventButton.className = "calendar-item";
+          eventButton.textContent = note;
+          const selected =
+            selectedCalendarItem?.type === "event" &&
+            selectedCalendarItem.date === key;
+          eventButton.setAttribute("aria-pressed", String(selected));
+          if (selected) eventButton.classList.add("selected-item");
+          eventButton.addEventListener("click", () => {
+            selectedDate = date;
+            selectedCalendarItem = { type: "event", date: key };
+            render();
+          });
+          dayCell.append(eventButton);
+        } else {
+          const label = document.createElement("small");
+          label.className = noteClass;
+          label.textContent = note;
+          dayCell.append(label);
+        }
       }
 
       // GOOGLE CALENDAR API: Display U.S. holidays.
@@ -385,7 +414,7 @@ function initializeCalendar() {
           holidayLabel.className = "calendar-holiday";
           holidayLabel.textContent = `Holiday: ${holidayName}`;
 
-          dayButton.append(holidayLabel);
+          dayCell.append(holidayLabel);
         }
       }
 
@@ -394,25 +423,29 @@ function initializeCalendar() {
         const dayShifts = getShiftsForDate(key);
 
         dayShifts.forEach((shift) => {
-          const shiftLabel = document.createElement("small");
-
-          shiftLabel.className = "employee-shift";
-          shiftLabel.textContent =
+          const shiftButton = document.createElement("button");
+          shiftButton.type = "button";
+          shiftButton.className = "calendar-item employee-shift";
+          shiftButton.textContent =
             `Emp ${shift.employeeId}: ${shift.start}–${shift.end}`;
-
-          dayButton.append(shiftLabel);
+          const selected =
+            selectedCalendarItem?.type === "shift" &&
+            selectedCalendarItem.shift === shift;
+          shiftButton.setAttribute("aria-pressed", String(selected));
+          if (selected) shiftButton.classList.add("selected-item");
+          shiftButton.addEventListener("click", () => {
+            selectedDate = date;
+            selectedCalendarItem = { type: "shift", shift };
+            render();
+          });
+          dayCell.append(shiftButton);
         });
-
-        dayButton.addEventListener("click", () => {
-          selectedDate = date;
-          render();
-        });
-      } else {
-        dayButton.disabled = true;
       }
 
-      grid.append(dayButton);
+      grid.append(dayCell);
     }
+
+    deleteCalendarItem.disabled = !selectedCalendarItem;
   }
 
   // Existing calendar navigation.
@@ -423,6 +456,7 @@ function initializeCalendar() {
       1
     );
 
+    selectedCalendarItem = null;
     render();
   });
 
@@ -433,6 +467,7 @@ function initializeCalendar() {
       1
     );
 
+    selectedCalendarItem = null;
     render();
   });
 
@@ -446,6 +481,7 @@ function initializeCalendar() {
     );
 
     selectedDate = currentDate;
+    selectedCalendarItem = null;
     render();
   });
 
@@ -463,6 +499,7 @@ function initializeCalendar() {
       : "Close event form";
 
     if (!eventForm.hidden) {
+      eventDateInput.value = isoDate(new Date());
       document.querySelector("#event-title").focus();
     }
   });
@@ -494,6 +531,7 @@ function initializeCalendar() {
     );
 
     selectedDate = eventDate;
+    selectedCalendarItem = null;
 
     eventForm.reset();
     document.querySelector("#event-date").value = dateValue;
@@ -502,6 +540,48 @@ function initializeCalendar() {
     eventToggle.setAttribute("aria-expanded", "false");
     eventToggle.textContent = "+ Add payroll event";
 
+    render();
+  });
+
+  deleteCalendarItem.addEventListener("click", () => {
+    if (!selectedCalendarItem) return;
+
+    if (selectedCalendarItem.type === "event") {
+      const eventTitle = customEvents.get(selectedCalendarItem.date);
+      if (!eventTitle) return;
+      if (!window.confirm(`Delete "${eventTitle}"?`)) return;
+
+      const updatedEvents = Object.fromEntries(customEvents);
+      delete updatedEvents[selectedCalendarItem.date];
+      if (!saveData(EVENTS_KEY, updatedEvents)) return;
+
+      customEvents.delete(selectedCalendarItem.date);
+    } else {
+      const shiftIndex = employeeShifts.indexOf(selectedCalendarItem.shift);
+      if (shiftIndex < 0) {
+        selectedCalendarItem = null;
+        render();
+        return;
+      }
+
+      const shift = employeeShifts[shiftIndex];
+      if (
+        !window.confirm(
+          `Delete Employee ${shift.employeeId}'s shift on ${formatDate(shift.date)}?`
+        )
+      ) {
+        return;
+      }
+
+      const updatedShifts = employeeShifts.filter(
+        (savedShift) => savedShift !== shift
+      );
+      if (!saveData(SHIFTS_KEY, updatedShifts)) return;
+
+      employeeShifts = updatedShifts;
+    }
+
+    selectedCalendarItem = null;
     render();
   });
 
@@ -576,6 +656,7 @@ function initializeCalendar() {
       );
 
       selectedDate = savedDate;
+      selectedCalendarItem = null;
 
       shiftForm.reset();
       shiftForm.hidden = true;
