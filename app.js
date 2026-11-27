@@ -509,7 +509,7 @@ function initializeCalendar() {
   if (shiftForm && shiftToggle) {
     // calendar.html already handles opening and closing the form.
 
-    shiftForm.addEventListener("submit", (event) => {
+    shiftForm.addEventListener("submit", async (event) => {
       event.preventDefault();
 
       const employeeId = document
@@ -552,16 +552,45 @@ function initializeCalendar() {
         return;
       }
 
-      const newShift = {
-        id: Date.now(),
-        employeeId,
-        date: shiftDate,
-        start: startTime,
-        end: endTime,
-        status: shiftStatus,
-      };
+     
+// For now, create scheduled shifts only.
+if (shiftStatus !== "Scheduled") {
+    alert("Please select Scheduled for new shifts.");
+    return;
+}
 
-      const updatedShifts = [...employeeShifts, newShift];
+try {
+    // Save the shift to MySQL through the backend
+    const response = await fetch('/api/shifts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            employee_id: Number(employeeId),
+            shift_start: `${shiftDate} ${startTime}:00`,
+            shift_end: `${shiftDate} ${endTime}:00`,
+            break_minutes: 0
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result.error || 'Unable to save shift'
+        );
+    }
+
+    // Reload saved shifts from MySQL
+    await loadShiftsFromDatabase();
+
+} catch (error) {
+    console.error('Error saving shift:', error);
+    alert(error.message);
+    return;
+}
+
 
       if (!saveData(SHIFTS_KEY, updatedShifts)) return;
 
@@ -587,7 +616,38 @@ function initializeCalendar() {
     });
   }
 
+  // Retrieve employee shifts from MySQL
+  async function loadShiftsFromDatabase() {
+    try {
+      const response = await fetch('/api/shifts');
+
+      if (!response.ok) {
+        throw new Error('Unable to load shifts');
+      }
+
+      const shifts = await response.json();
+
+      employeeShifts = shifts.map(shift => ({
+        id: shift.shift_id,
+        employeeId: String(shift.employee_id),
+        date: shift.shift_start.slice(0, 10),
+        start: shift.shift_start.slice(11, 16),
+        end: shift.shift_end.slice(11, 16),
+        status: shift.shift_status === 'Canceled'
+          ? 'Cancelled'
+          : shift.shift_status
+      }));
+
+      console.log('Employee shifts loaded from MySQL!');
+      render();
+
+    } catch (error) {
+      console.error('Unable to load MySQL shifts:', error);
+    }
+  }
+
   render();
+  loadShiftsFromDatabase();
 }
 
 initializePayroll();

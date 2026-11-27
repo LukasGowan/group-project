@@ -1,0 +1,11 @@
+
+# Node.js dependencies
+node_modules/
+
+# Private database credentials
+.env
+.env.*
+!.env.example
+
+# Log files
+*.log
