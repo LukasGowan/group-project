@@ -121,7 +121,7 @@ CREATE TABLE `pay_rates` (
   `hourly_rate` decimal(10,2) NOT NULL,
   `effective_date` date NOT NULL,
   PRIMARY KEY (`pay_rate_id`),
-  UNIQUE KEY `uq_employee_rate_date` (`employee_id`,`effective_date`),
+  KEY `idx_pay_rates_employee_date` (`employee_id`,`effective_date`,`pay_rate_id`),
   CONSTRAINT `fk_pay_rate_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employee_id`),
   CONSTRAINT `chk_hourly_rate` CHECK ((`hourly_rate` >= 0))
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

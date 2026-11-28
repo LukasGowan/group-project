@@ -22,7 +22,7 @@
       </nav>
       <div class="sidebar-bottom">
         <div class="help-card"><strong>Need help?</strong><p>Keep employee and payroll information up to date.</p></div>
-       
+
       </div>
     </aside>
 
@@ -62,8 +62,8 @@
         <div class="page-heading"><div><p class="eyebrow">PEOPLE</p><h1>Employees</h1><p class="muted">Manage your team, roles, and compensation.</p></div><button class="primary-button" id="addEmployeeButton">＋ Add employee</button></div>
         <article class="panel">
           <div class="toolbar"><div class="search-box"><span>⌕</span><input type="search" id="employeeSearch" placeholder="Search name, ID, or department" aria-label="Search employees"></div><span class="muted" id="employeeCount">6 employees</span></div>
-          <div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>DEPARTMENT</th><th>POSITION</th><th>MONTHLY SALARY</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="employeeTable"></tbody></table></div>
-          <p class="table-note"> Employee changes are saved in this browser.</p>
+          <div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>DEPARTMENT</th><th>POSITION</th><th>HOURLY RATE</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="employeeTable"></tbody></table></div>
+          <p class="table-note"> Employee information is stored in the MySql database.</p>
         </article>
       </section>
 
@@ -204,10 +204,48 @@
       <div class="dialog-heading"><div><p class="eyebrow">EMPLOYEE DIRECTORY</p><h2 id="dialogTitle">Add employee</h2></div><button type="button" class="close-button" id="closeDialog" aria-label="Close dialog">×</button></div>
       <input type="hidden" id="editEmployeeId">
       <label>Full name<input id="employeeName" required maxlength="80" placeholder="e.g. Jordan Lee"></label>
+
+<!-- Employee email address -->
+<label>
+    Email Address
+    <input
+        type="email"
+        id="employeeEmail"
+        required
+        maxlength="100"
+        placeholder="employee@example.com"
+    >
+</label>
+<!-- Employee hire date -->
+<label>
+    Hire Date
+    <input
+        type="date"
+        id="employeeHireDate"
+        required
+    >
+</label>
+
       <div class="form-grid">
-        <label>Department<input id="employeeDepartment" required maxlength="50" placeholder="e.g. IT"></label>
+<label>
+    Department
+    <select id="employeeDepartment" required>
+        <option value="">Select a Department</option>
+    </select>
+</label>
         <label>Position<input id="employeePosition" required maxlength="60" placeholder="e.g. Developer"></label>
-        <label class="full">Monthly salary ($)<input id="employeeSalary" type="number" required min="0" step="0.01" placeholder="3500"></label>
+<label class="full">
+    Hourly Pay Rate ($)
+    <input
+        id="employeeHourlyRate"
+        type="number"
+        required
+        min="0"
+        step="0.01"
+        placeholder="20.00"
+    >
+</label>
+
       </div>
       <div class="dialog-actions"><button type="button" class="secondary-button" id="cancelDialog">Cancel</button><button type="submit" class="primary-button">Save employee</button></div>
     </form>

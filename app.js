@@ -273,16 +273,18 @@ function initializeCalendar() {
   }
 
   // Check whether the employee already has an overlapping shift.
-  function hasShiftConflict(employeeId, date, start, end) {
+
+  function hasShiftConflict(employeeId, date, start, end, editingId = "") {
     return employeeShifts.some((shift) => {
       return (
+        String(shift.id) !== editingId &&
         shift.employeeId === employeeId &&
         shift.date === date &&
         shift.status !== "Cancelled" &&
         start < shift.end &&
         end > shift.start
-      );
-    });
+     );
+   });
   }
 
   function render() {
@@ -507,6 +509,48 @@ function initializeCalendar() {
 
   // Employee shift scheduling.
   if (shiftForm && shiftToggle) {
+
+    // Fill the form when an existing shift is selected
+    const editShiftSelect =
+      document.getElementById('edit-shift-id');
+
+    editShiftSelect.addEventListener('change', () => {
+      const selectedId = editShiftSelect.value;
+
+      // Find the selected shift from MySQL data
+      const selectedShift = employeeShifts.find(
+        shift => String(shift.id) === selectedId
+      );
+
+      const employeeInput =
+        document.getElementById('shift-employee');
+
+      // Reset the form when creating a new shift
+      if (!selectedShift) {
+        shiftForm.reset();
+        employeeInput.readOnly = false;
+        return;
+      }
+
+      // Fill the form with existing shift information
+      employeeInput.value = selectedShift.employeeId;
+      employeeInput.readOnly = true;
+
+      document.getElementById('shift-date').value =
+        selectedShift.date;
+
+      document.getElementById('shift-start').value =
+        selectedShift.start;
+
+      document.getElementById('shift-end').value =
+        selectedShift.end;
+
+      document.getElementById('shift-status').value =
+        selectedShift.status;
+
+      console.log('Existing shift loaded for editing!');
+    });
+
     // calendar.html already handles opening and closing the form.
 
     shiftForm.addEventListener("submit", async (event) => {
@@ -544,7 +588,7 @@ function initializeCalendar() {
 
       if (
         shiftStatus !== "Cancelled" &&
-        hasShiftConflict(employeeId, shiftDate, startTime, endTime)
+        hasShiftConflict(employeeId, shiftDate, startTime, endTime, document.getElementById("edit-shift-id").value)
       ) {
         alert(
           "Scheduling conflict: this employee already has a shift during that time."
@@ -552,27 +596,39 @@ function initializeCalendar() {
         return;
       }
 
-     
+const editingId = document.getElementById('edit-shift-id').value;
 // For now, create scheduled shifts only.
-if (shiftStatus !== "Scheduled") {
+if (!editingId && shiftStatus !== "Scheduled") {
     alert("Please select Scheduled for new shifts.");
     return;
 }
 
 try {
     // Save the shift to MySQL through the backend
-    const response = await fetch('/api/shifts', {
-        method: 'POST',
+    const response = await fetch(editingId ? `/api/shifts/${editingId}` : '/api/shifts', {
+        method: editingId ? 'PUT' : 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            employee_id: Number(employeeId),
-            shift_start: `${shiftDate} ${startTime}:00`,
-            shift_end: `${shiftDate} ${endTime}:00`,
-            break_minutes: 0
-        })
-    });
+
+      body: JSON.stringify({
+        employee_id: Number(employeeId),
+        shift_start: `${shiftDate} ${startTime}:00`,
+       shift_end: `${shiftDate} ${endTime}:00`,
+
+     // Preserve break minutes when editing
+       break_minutes: editingId
+          ? (employeeShifts.find(
+             shift => String(shift.id) === editingId
+            )?.breakMinutes ?? 0)
+          : 0,
+
+     // Convert the status for MySQL
+      shift_status: shiftStatus === "Cancelled"
+          ? "Canceled"
+          : shiftStatus
+})
+});
 
     const result = await response.json();
 
@@ -591,10 +647,6 @@ try {
     return;
 }
 
-
-      if (!saveData(SHIFTS_KEY, updatedShifts)) return;
-
-      employeeShifts = updatedShifts;
 
       const savedDate = new Date(`${shiftDate}T00:00:00`);
 
@@ -633,10 +685,38 @@ try {
         date: shift.shift_start.slice(0, 10),
         start: shift.shift_start.slice(11, 16),
         end: shift.shift_end.slice(11, 16),
+        breakMinutes: shift.break_minutes,
         status: shift.shift_status === 'Canceled'
           ? 'Cancelled'
           : shift.shift_status
       }));
+
+      // Populate the Edit Existing Shift dropdown
+      const editShiftSelect =
+        document.getElementById('edit-shift-id');
+
+      if (editShiftSelect) {
+        // Start with the option to create a shift
+        editShiftSelect.replaceChildren(
+          new Option('Create a New Shift', '')
+        );
+
+        // Add existing shifts from MySQL
+        shifts.forEach(shift => {
+          const employeeName =
+            `${shift.first_name} ${shift.last_name}`;
+
+          const shiftDate =
+            shift.shift_start.slice(0, 10);
+
+          const option = new Option(
+            `${employeeName} - ${shiftDate}`,
+            String(shift.shift_id)
+          );
+
+          editShiftSelect.add(option);
+        });
+      }
 
       console.log('Employee shifts loaded from MySQL!');
       render();
